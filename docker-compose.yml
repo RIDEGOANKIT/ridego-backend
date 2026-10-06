@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ridego
+      POSTGRES_USER: ridego
+      POSTGRES_PASSWORD: ridego_dev_password
+    ports: ["5432:5432"]
+    volumes: ["ridego_db:/var/lib/postgresql/data", "./server/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro"]
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    volumes: ["./server:/app"]
+    command: sh -c "npm install && npm start"
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgresql://ridego:ridego_dev_password@db:5432/ridego
+      JWT_SECRET: change_this_in_production
+      CORS_ORIGIN: http://localhost:5173
+    depends_on: [db]
+    ports: ["8080:8080"]
+volumes: {ridego_db: {}}
